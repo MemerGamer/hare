@@ -5,6 +5,7 @@ import qualified Data.ByteString as BS
 import Data.ByteString.Char8 (hPutStrLn, pack, unpack)
 import qualified Data.ByteString.Char8 as BSC
 import Data.List (intercalate)
+import Debug.Trace
 import GHC.IO.Handle
   ( BufferMode (NoBuffering),
     hClose,
@@ -56,27 +57,25 @@ server port hostname backlog = withSocketsDo $ do
     fileExists <- doesFileExist filePath
     if fileExists
       then do
-        contents <- BS.readFile filePath
         let contentType = getContentType filePath
-        let response =
-              intercalate
-                "\r\n"
-                [ "HTTP/1.1 200 OK",
-                  "Content-Type: " ++ contentType,
-                  "Content-Length: " ++ show (BS.length contents),
-                  "",
-                  ""
-                ]
-        if isImage contentType
-          then do
-            BSC.hPutStrLn handle (BSC.pack response)
-            BS.hPutStr handle contents
-          else do
-            BSC.hPutStrLn handle (BSC.pack response)
-            BSC.hPutStrLn handle (BSC.pack $ unpack contents)
+        let headers = responseHeaders contentType
+        putStrLn $ "Sending headers: " ++ headers -- Debug print statement
+        BSC.hPutStrLn handle (BSC.pack headers)
+        BS.readFile filePath >>= BS.hPutStr handle
       else do
+        putStrLn "File not found" -- Debug print statement
         hPutStrLn handle (pack "HTTP/1.1 404 Not Found\r\n\r\n")
         hClose handle
+
+responseHeaders :: String -> String
+responseHeaders contentType =
+  intercalate
+    "\r\n"
+    [ "HTTP/1.1 200 OK",
+      "Content-Type: " ++ contentType,
+      "",
+      ""
+    ]
 
 isImage :: String -> Bool
 isImage contentType =
@@ -98,7 +97,9 @@ getFilePath request =
         if head path == '/'
           then tail path
           else path
-   in "sites/" </> normalizedPath
+      --  in trace ("Normalized path: " ++ normalizedPath) $ "sites/" </> normalizedPath
+      filePath = "sites" </> normalizedPath
+   in filePath
 
 getContentType :: FilePath -> String
 getContentType path =
@@ -110,4 +111,7 @@ getContentType path =
         ".png" -> "image/png"
         ".jpg" -> "image/jpeg"
         ".jpeg" -> "image/jpeg"
+        ".gif" -> "image/gif"
+        ".bmp" -> "image/bmp"
+        ".svg" -> "image/svg+xml"
         _ -> "application/octet-stream"
