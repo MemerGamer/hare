@@ -31,6 +31,7 @@ import Network.Socket
   )
 import System.Directory (doesFileExist)
 import System.FilePath (takeExtension, (</>))
+import System.IO (IOMode (ReadMode), hFileSize, withFile)
 
 main = do
   let port = 8080
@@ -57,8 +58,9 @@ server port hostname backlog = withSocketsDo $ do
     fileExists <- doesFileExist filePath
     if fileExists
       then do
+        fileSize <- withFile filePath ReadMode hFileSize
         let contentType = getContentType filePath
-        let headers = responseHeaders contentType
+        let headers = responseHeaders contentType (last $ words filePath) (fromIntegral fileSize)
         putStrLn $ "Sending headers: " ++ headers -- Debug print statement
         BSC.hPutStrLn handle (BSC.pack headers)
         BS.readFile filePath >>= BS.hPutStr handle
@@ -67,12 +69,14 @@ server port hostname backlog = withSocketsDo $ do
         hPutStrLn handle (pack "HTTP/1.1 404 Not Found\r\n\r\n")
         hClose handle
 
-responseHeaders :: String -> String
-responseHeaders contentType =
+responseHeaders :: String -> String -> Int -> String
+responseHeaders contentType fileName fileSize =
   intercalate
     "\r\n"
     [ "HTTP/1.1 200 OK",
       "Content-Type: " ++ contentType,
+      "Content-Disposition: inline; filename=\"" ++ fileName ++ "\"",
+      "Content-Length: " ++ show fileSize,
       "",
       ""
     ]
