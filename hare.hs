@@ -34,11 +34,14 @@ import System.FilePath (takeExtension, (</>))
 import System.IO (IOMode (ReadMode), hFileSize, withFile)
 
 main = do
-  let port = 8080
+  let port = 5050
       hostname = "127.0.0.1"
       maxQueueSize = 2
       backlog = fromIntegral maxQueueSize
-  putStrLn $ "Listening on port " ++ show port
+      -- created clickable url with ansi codes
+      url = "http://localhost:" ++ show port
+      hyperlink = "\x1b]8;;" ++ url ++ "\a" ++ url ++ "\x1b]8;;\a"
+  putStrLn $ "Listening on: " ++ hyperlink
   server port hostname backlog
 
 server :: PortNumber -> String -> Int -> IO ()
@@ -102,7 +105,11 @@ getFilePath request =
           then tail path
           else path
       --  in trace ("Normalized path: " ++ normalizedPath) $ "sites/" </> normalizedPath
-      filePath = "sites" </> normalizedPath
+      filePath =
+        if normalizedPath == ""
+          then -- redirecting to the index.html if there is no path
+            "sites/index.html"
+          else "sites" </> normalizedPath
    in filePath
 
 getContentType :: FilePath -> String
