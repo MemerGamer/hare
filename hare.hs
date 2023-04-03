@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wno-deprecations #-}
 
-import Control.Monad
+import Control.Monad (forever)
 import qualified Data.ByteString as BS
 import Data.ByteString.Char8 (hPutStrLn, pack, unpack)
 import qualified Data.ByteString.Char8 as BSC
 import Data.List (intercalate)
-import Debug.Trace
+import Debug.Trace ()
 import GHC.IO.Handle
   ( BufferMode (NoBuffering),
     hClose,
@@ -33,6 +33,7 @@ import System.Directory (doesFileExist)
 import System.FilePath (takeExtension, (</>))
 import System.IO (IOMode (ReadMode), hFileSize, withFile)
 
+main :: IO ()
 main = do
   let port = 5050
       hostname = "127.0.0.1"
