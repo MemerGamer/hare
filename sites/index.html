@@ -7,21 +7,21 @@
     <link
       id="dark-scheme-icon"
       rel="icon"
-      href="./icon.png"
+      href="/img/icon.png"
       type="image/png"
       media="prefers-color-scheme: dark"
     />
     <link
       id="light-scheme-icon"
       rel="icon"
-      href="icon.png"
+      href="/img/icon.png"
       type="image/png"
       media="prefers-color-scheme: light"
     />
     <link
       id="light-scheme-icon"
       rel="icon"
-      href="icon.png"
+      href="/img/icon.png"
       type="image/png"
       media="prefers-color-scheme: no-preference"
     />
@@ -31,89 +31,13 @@
       href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300&display=swap"
       rel="stylesheet"
     />
-
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-      .refresh {
-        position: absolute;
-        margin: auto;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        height: 50%;
-      }
-      header {
-        position: relative;
-        top: 45%;
-        transform: translateY(-50%);
-
-        animation-name: fadein;
-        animation-duration: 2s;
-      }
-      header h1 {
-        display: inline;
-        font-size: 5rem;
-      }
-      header img {
-        display: inline;
-        position: relative;
-        top: 12px;
-        width: 6rem;
-        /* height: 50px; */
-        margin-left: 5px;
-      }
-      body {
-        text-align: center;
-        margin-bottom: 50px;
-        font-family: "Inconsolata", monospace;
-      }
-      h1 {
-        color: #f8f4f2;
-      }
-      h2 {
-        color: #f8f4f2;
-      }
-      p {
-        color: #f8f4f2;
-      }
-      footer {
-        position: absolute;
-        height: 150px;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
-        margin-bottom: 0px;
-      }
-
-      @keyframes fadein {
-        from {
-          opacity: 0;
-          top: 42%;
-        }
-        to {
-          opacity: 1;
-          top: 45%;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body style="background-image: url('background.png')">
-    <div
-      style="
-        background-color: rgba(0, 0, 0, 0.26);
-        height: 100vh;
-        width: 100%;
-        position: relative;
-      "
-    >
+  <body>
+    <div id="container">
       <header>
         <h1>Hello, <span style="margin-right: 15px">Hare</span></h1>
-        <img src="icon.png" alt="hare icon" />
+        <img src="/img/icon.png" alt="hare icon" />
       </header>
 
       <footer>
@@ -122,6 +46,6 @@
         <p>Design made by Schifler Patricia Vivien</p>
       </footer>
     </div>
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>
