@@ -62,15 +62,16 @@ server port hostname backlog = withSocketsDo $ do
     fileExists <- doesFileExist filePath
     if fileExists
       then do
-        fileSize <- withFile filePath ReadMode hFileSize
         let contentType = getContentType filePath
-        let headers = responseHeaders contentType (last $ words filePath) (fromIntegral fileSize)
+        contents <- BS.readFile filePath
+        let headers = responseHeaders contentType (last $ words filePath) (fromIntegral $ BS.length contents)
         putStrLn $ "Sending headers: " ++ headers -- Debug print statement
         BSC.hPutStrLn handle (BSC.pack headers)
-        BS.readFile filePath >>= BS.hPutStr handle
+        BS.hPutStr handle contents
       else do
         putStrLn "File not found" -- Debug print statement
-        hPutStrLn handle (pack "HTTP/1.1 404 Not Found\r\n\r\n")
+        let redirectHeaders = "HTTP/1.1 302 Found\r\nLocation: /404.html\r\n\r\n"
+        hPutStrLn handle (pack redirectHeaders)
         hClose handle
 
 responseHeaders :: String -> String -> Int -> String
