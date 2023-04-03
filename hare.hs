@@ -74,37 +74,16 @@ server port hostname backlog = withSocketsDo $ do
         hClose handle
 
 responseHeaders :: String -> String -> Int -> String
-responseHeaders contentType fileName fileSize
-  | isImage contentType =
-    intercalate
-      "\r\n"
-      [ "HTTP/1.1 200 OK",
-        "Content-Type: " ++ contentType,
-        "Content-Disposition: inline; filename=\"" ++ fileName ++ "\"",
-        "",
-        ""
-      ]
-  | otherwise =
-    intercalate
-      "\r\n"
-      [ "HTTP/1.1 200 OK",
-        "Content-Type: " ++ contentType,
-        "Content-Disposition: inline; filename=\"" ++ fileName ++ "\"",
-        "Content-Length: " ++ show fileSize,
-        "",
-        ""
-      ]
-
-isImage :: String -> Bool
-isImage contentType =
-  contentType == "image/jpeg"
-    || contentType == "image/png"
-    || contentType == "image/gif"
-    || contentType == "image/bmp"
-    || contentType == "image/svg+xml"
-    || contentType == "image/x-icon"
-    || contentType == "image/webp"
-    || contentType == "image/avif"
+responseHeaders contentType fileName fileSize =
+  intercalate
+    "\r\n"
+    [ "HTTP/1.1 200 OK",
+      "Content-Type: " ++ contentType,
+      "Content-Disposition: inline; filename=\"" ++ fileName ++ "\"",
+      "Content-Length: " ++ show fileSize,
+      "",
+      ""
+    ]
 
 resolve :: String -> PortNumber -> IO AddrInfo
 resolve hostname port = do
