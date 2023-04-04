@@ -3,7 +3,6 @@
 import Control.Monad (forever, unless)
 import qualified Data.ByteString.Char8 as BSC
 import Data.List (intercalate)
-import Debug.Trace ()
 import GHC.IO.Handle
   ( BufferMode (LineBuffering, NoBuffering),
     Handle,
@@ -78,7 +77,7 @@ server port hostname backlog = withSocketsDo $ do
 
 loop :: Handle -> BSC.ByteString -> IO ()
 loop handle contents = do
-  let chunkSize = 4096
+  let chunkSize = 8192
   let (chunk, rest) = BSC.splitAt chunkSize contents
   unless (BSC.null chunk) $ do
     BSC.hPut handle chunk
