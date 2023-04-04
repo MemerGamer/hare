@@ -2,6 +2,7 @@
 
 import Control.Monad (forever, unless)
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
 import Data.List (intercalate)
 import GHC.IO.Handle
   ( BufferMode (LineBuffering, NoBuffering),
@@ -63,9 +64,9 @@ server port hostname backlog = withSocketsDo $ do
     if fileExists
       then do
         let contentType = getContentType filePath
-        contents <- BSC.readFile filePath
-        let fileSize = BSC.length contents
-        let headers = responseHeaders contentType (last $ words filePath) fileSize
+        contents <- BSL.readFile filePath
+        let fileSize = BSL.length contents
+        let headers = responseHeaders contentType (last $ words filePath) (fromIntegral fileSize)
         putStrLn $ "Sending headers: " ++ headers -- Debug print statement
         BSC.hPut handle (BSC.pack headers)
         loop handle contents
@@ -75,12 +76,12 @@ server port hostname backlog = withSocketsDo $ do
         BSC.hPut handle (BSC.pack redirectHeaders)
         hClose handle
 
-loop :: Handle -> BSC.ByteString -> IO ()
+loop :: Handle -> BSL.ByteString -> IO ()
 loop handle contents = do
   let chunkSize = 8192
-  let (chunk, rest) = BSC.splitAt chunkSize contents
-  unless (BSC.null chunk) $ do
-    BSC.hPut handle chunk
+  let (chunk, rest) = BSL.splitAt chunkSize contents
+  unless (BSL.null chunk) $ do
+    BSL.hPut handle chunk
     loop handle rest
 
 responseHeaders :: String -> String -> Int -> String
