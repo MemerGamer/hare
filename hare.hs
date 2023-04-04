@@ -1,15 +1,15 @@
 {-# OPTIONS_GHC -Wno-deprecations #-}
 
-import Control.Monad (forever)
-import qualified Data.ByteString as BS
-import Data.ByteString.Char8 (hPutStrLn, pack, unpack)
+import Control.Monad (forever, unless)
 import qualified Data.ByteString.Char8 as BSC
 import Data.List (intercalate)
 import Debug.Trace ()
 import GHC.IO.Handle
-  ( BufferMode (NoBuffering),
+  ( BufferMode (LineBuffering, NoBuffering),
+    Handle,
     hClose,
     hGetLine,
+    hSetBinaryMode,
     hSetBuffering,
   )
 import GHC.IO.IOMode (IOMode (ReadWriteMode))
@@ -56,6 +56,7 @@ server port hostname backlog = withSocketsDo $ do
     conn <- accept sock
     handle <- socketToHandle (fst conn) ReadWriteMode
     hSetBuffering handle NoBuffering
+    hSetBinaryMode handle True -- Set handle to binary mode
     request <- hGetLine handle
     putStrLn $ "Received request: " ++ request
     let filePath = getFilePath request
@@ -63,16 +64,25 @@ server port hostname backlog = withSocketsDo $ do
     if fileExists
       then do
         let contentType = getContentType filePath
-        contents <- BS.readFile filePath
-        let headers = responseHeaders contentType (last $ words filePath) (fromIntegral $ BS.length contents)
+        contents <- BSC.readFile filePath
+        let fileSize = BSC.length contents
+        let headers = responseHeaders contentType (last $ words filePath) fileSize
         putStrLn $ "Sending headers: " ++ headers -- Debug print statement
-        BSC.hPutStrLn handle (BSC.pack headers)
-        BS.hPutStr handle contents
+        BSC.hPut handle (BSC.pack headers)
+        loop handle contents
       else do
         putStrLn "File not found" -- Debug print statement
         let redirectHeaders = "HTTP/1.1 302 Found\r\nLocation: /404.html\r\n\r\n"
-        hPutStrLn handle (pack redirectHeaders)
+        BSC.hPut handle (BSC.pack redirectHeaders)
         hClose handle
+
+loop :: Handle -> BSC.ByteString -> IO ()
+loop handle contents = do
+  let chunkSize = 4096
+  let (chunk, rest) = BSC.splitAt chunkSize contents
+  unless (BSC.null chunk) $ do
+    BSC.hPut handle chunk
+    loop handle rest
 
 responseHeaders :: String -> String -> Int -> String
 responseHeaders contentType fileName fileSize =
