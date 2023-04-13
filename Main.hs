@@ -1,9 +1,3 @@
-import Network.Socket (PortNumber)
--- meghívtam a PortNumber típust a Network.Socket moduleból
--- bővebben a típusról és a moduleról:
--- https://hackage.haskell.org/package/network-3.1.2.8/docs/Network-Socket.html
--- https://hackage.haskell.org/package/network-3.1.2.8/docs/Network-Socket.html#g:17
-
 import Server (server)
 
 -- meghívtam a Server moduleból a server függvényt
