@@ -4,3 +4,20 @@
 </p>
 
 Hare is a HTTP server written in haskell, based on the [rabbit](https://github.com/MemerGamer/rabbit) HTTP server.
+
+## Current state
+
+- Currently it's only a static webserver
+- After running the project (ex: `runhaskell Main.hs`) it displays the following message:
+  - `Listening on: http://localhost:5050`
+  - When clicked on the url it opens in the default browser
+  - `Note`: The server constantly logs the requests to the terminal
+- It can display static files located in the `sites` directory
+- If there is no path specified after the port number it redirects to `site/index.html`
+- If it cannot find a path or file it redirects to `sites/404.html`
+
+## Future improvements
+
+- [ ] make it a dynamic webserver
+- [ ] allow users to run haskell functions using paths
+- [ ] transpile haskell funtions to javascript
