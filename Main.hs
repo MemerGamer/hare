@@ -1,12 +1,5 @@
-{-# OPTIONS_GHC -Wno-deprecations #-}
-
-import Control.Monad (forever, unless)
-import qualified Data.ByteString.Char8 as BSC
-import qualified Data.ByteString.Lazy as BSL
-import Data.List (intercalate)
 import Network.Socket (PortNumber)
 import Server (server)
-import System.IO (IOMode (ReadMode), hClose, withFile)
 
 main :: IO ()
 main = do

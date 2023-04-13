@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-deprecations #-}
-
 module Server where
 
 import Control.Monad (forever, unless)
