@@ -55,6 +55,10 @@ import Network.Socket
 -- PortNumber típus: az IP portok számát jelöli
 -- SocketType típus: az adatátviteli protokollokat határozza meg
 -- SocketOption típus: a socket opcióit adja meg
+-- meghívtam a PortNumber típust a Network.Socket moduleból
+-- bővebben a típusról és a moduleról:
+-- https://hackage.haskell.org/package/network-3.1.2.8/docs/Network-Socket.html
+-- https://hackage.haskell.org/package/network-3.1.2.8/docs/Network-Socket.html#g:17
 
 import System.Directory (doesFileExist)
 import System.FilePath (takeExtension, (</>))
