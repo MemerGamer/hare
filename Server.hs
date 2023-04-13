@@ -103,7 +103,7 @@ server port hostname backlog = withSocketsDo $ do
 
 loop :: Handle -> BSL.ByteString -> IO ()
 loop handle contents = do
-  let chunkSize = 8192
+  let chunkSize = 16384
   let (chunk, rest) = BSL.splitAt chunkSize contents
   unless (BSL.null chunk) $ do
     BSL.hPut handle chunk
