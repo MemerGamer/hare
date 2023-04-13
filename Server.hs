@@ -1,9 +1,18 @@
 module Server where
 
+-- jelzem hogy ez egy haskell modul
+
 import Control.Monad (forever, unless)
+-- Controll.Monad
+-- forever ez a függvény vár IO actiont és a vételenségig ismétli
+-- unless - vár egy IO actiont és egy booleant és ha a boolean hamis akkor hajtja végre az IO actiont
 import qualified Data.ByteString.Char8 as BSC
+-- ez a modul ByteStringekkel dolgozik (byte sorozatokkal lényegében) amelyek részei az ASCII karaktereknek
 import qualified Data.ByteString.Lazy as BSL
+-- ez a modul hasonló az előzőhöz, viszont ez csak akkor dolgozik a bytestringekkel amikor rájuk szükségük van
 import Data.List (intercalate)
+-- listák manipulálásához szükséges függvények
+-- intercalate: összefűzi a listaelemeket adott szeparátorral
 import GHC.IO.Handle
   ( BufferMode (LineBuffering, NoBuffering),
     Handle,
@@ -12,7 +21,15 @@ import GHC.IO.Handle
     hSetBinaryMode,
     hSetBuffering,
   )
+-- Handlekkel kapcsolatos függvények csomaga ; (kapcsolódás fileok és/vagy folyamatok között)
+-- BufferMode: bufferelési mód handlek esetében
+-- Handle: reprezentál egy Handlet
+-- hClose: bezár egy handlet
+-- hGetLine: kiolvas egy sort a handleből
+-- hSetBinaryMode: beállítja a bináris módot a handlenek
+-- hSetBuffering: beállítja a bufferelési módot a handlenek
 import GHC.IO.IOMode (IOMode (ReadWriteMode))
+-- specifikáció file handle mód megnyitására
 import Network.Socket
   ( AddrInfo (addrAddress, addrFamily, addrSocketType),
     PortNumber,
@@ -29,9 +46,25 @@ import Network.Socket
     socketToHandle,
     withSocketsDo,
   )
+-- A Network.Socket modulban találhatók azok a funkciók, amelyekkel hálózati szolgáltatásokat lehet elérni.
+-- Például:
+-- socket: létrehoz egy socketet
+-- bind: hozzárendeli az adott socketet egy címhez
+-- listen: beállítja a socketet várakozó állapotba
+-- AddrInfo típus:  az IP címek és portok információit tartalmazza
+-- PortNumber típus: az IP portok számát jelöli
+-- SocketType típus: az adatátviteli protokollokat határozza meg
+-- SocketOption típus: a socket opcióit adja meg
+
 import System.Directory (doesFileExist)
 import System.FilePath (takeExtension, (</>))
 import System.IO (IOMode (ReadMode), hFileSize, withFile)
+
+-- A System.Directory: függvények melyek a fájlok kezelésére szolgálnak
+-- doesFileExist: megvizsgálja, hogy létezik-e adott fájl az adott útvonalon
+-- A System.FilePath modul: dolgozhatunk a fájlnevekkel és az útvonalakkal
+-- </> operátorral: összefűzhetjük az útvonalakat
+-- takeExtension függvénnyel: kinyerhetjük a fájlkiterjesztést
 
 server :: PortNumber -> String -> Int -> IO ()
 server port hostname backlog = withSocketsDo $ do
