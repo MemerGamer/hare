@@ -107,7 +107,17 @@ server port hostname backlog = withSocketsDo $ do
 -- Bemenetül kap:
 --  PortNumber értéket amin várakozni fog a kérésekre 
 --  String ami a hoszt név 
---  Int ami a maximális várakozási sort jelöli 
+--  Int ami a maximális várakozási sort jelöli
+--  a withSocketsDo leellenőrzni, hogy a socketet megfelelően vannak-e inicializálva 
+--  ezután a hoszt nevet és a portot egy AddrInfo struktútába rakjuk amelyet felhasznál a szerver
+--  hogy létrehozzon egy Streamet a socket függvény segítségével 
+--  a setSocketOption lehetővé teszi a port újra felhasználását amennyiben a szerver 
+--  hírtelen leálláskor nem tudná felszabadítani azt 
+--  ezután a socketet hozzá bindeoljuk a megflelő címhez ami az AddrInfo struktúrában található 
+--  és a liste fgv. el kezdi figyelni a bejövő http kéréseket a szerverre
+-- a forever loopban ha minden rendben van a bejövő kéréseket 
+-- megfelelő módon szét tagoljuk illetve feldolgozzuk segéd függvényekkel 
+-- és az általuk adott választ visszaküldjük http protokollon keresztül a kliensnek 
 
 loop :: Handle -> BSL.ByteString -> IO ()
 loop handle contents = do
