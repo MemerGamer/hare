@@ -101,6 +101,14 @@ server port hostname backlog = withSocketsDo $ do
         BSC.hPut handle (BSC.pack redirectHeaders)
         hClose handle
 
+-- A szerver várakozik bejövő HTTP kérésekre egy megadott porton és hoszton, 
+-- majd ezeket a kéréseket kezeli azzal, hogy vagy visszaadja a kérésre válaszul egy fájl tartalmát,
+-- vagy átirányít a "404 Not Found" oldalra, amennyiben nem talál ilyen filet.
+-- Bemenetül kap:
+--  PortNumber értéket amin várakozni fog a kérésekre 
+--  String ami a hoszt név 
+--  Int ami a maximális várakozási sort jelöli 
+
 loop :: Handle -> BSL.ByteString -> IO ()
 loop handle contents = do
   let chunkSize = 16384
@@ -108,6 +116,24 @@ loop handle contents = do
   unless (BSL.null chunk) $ do
     BSL.hPut handle chunk
     loop handle rest
+
+-- Ez a függvény egy egyszerű ciklust implementál, 
+-- amely adatblokkokat küld a hálózatra adott méretű "darabokban".
+-- A függvény két paramétert kap: 
+-- egy Handle típusú értéket, amely a hálózati kommunikációhoz használt kezelő, 
+-- és egy BSL.ByteString típusú értéket, amely a küldendő adatokat tartalmazza.
+--
+-- A ciklusban egy adott "darabméret" (chunkSize) értéke kerül inicializálásra,
+-- majd a küldendő adatokat felosztja két részre a splitAt függvénnyel.
+-- Az első részt (chunk) elküldi a hálózatra a hPut függvénnyel, majd
+-- rekurzívan meghívja a loop függvényt a második részre (rest), amíg az összes adatot elküldi.
+
+-- Az unless függvénnyel biztosítja, hogy a ciklus csak akkor fusson,
+-- ha az adott "darab" nem üres.
+-- A BSL.null függvénnyel ellenőrzi, hogy az adott darab üres-e,
+-- és ha nem, akkor elküldi a hálózatra, majd rekurzívan meghívja a loop függvényt
+-- a fennmaradó adatokra.
+-- A ciklus akkor ér véget, amikor az összes adatot elküldte a hálózatra.
 
 responseHeaders :: String -> String -> Int -> String
 responseHeaders contentType fileName fileSize =
@@ -121,11 +147,45 @@ responseHeaders contentType fileName fileSize =
       ""
     ]
 
+-- Ez a függvény a válaszüzenet HTTP fejléceit állítja elő,
+-- amelyek tartalmazzák a kérésre adandó választ.
+
+-- A függvény három paramétert vár: 
+-- contentType (a visszaküldendő fájl típusa), 
+-- fileName (a visszaküldendő fájl neve), 
+-- és fileSize (a visszaküldendő fájl mérete).
+
+-- Az intercalate függvénnyel a fejléceknek
+-- egy szövegsorozatot ad vissza,
+-- amely a következő HTTP fejléceket tartalmazza:
+
+-- Az "HTTP/1.1 200 OK" státuszüzenet, amely jelzi, hogy a kérés sikeres volt.
+-- A "Content-Type" fejléc, amely az adott fájl típusát határozza meg.
+-- A "Content-Disposition" fejléc, 
+-- amely az adott fájl elrendezését határozza meg. 
+-- A "Content-Length" fejléc, amely a visszaküldött adatok méretét határozza meg.
+-- Két üres sor, amelyekkel a fejlécek véget érnek.
+-- A fejlécek szövegsorozata visszatérési értékként kerül visszaadásra.
+
 resolve :: String -> PortNumber -> IO AddrInfo
 resolve hostname port = do
   let hints = defaultHints {addrSocketType = Stream}
   addr : _ <- getAddrInfo (Just hints) (Just hostname) (Just $ show port)
   return addr
+
+-- Ez a függvény egy adott hostname és port érték alapján
+-- visszaad egy AddrInfo típusú értéket az IO monádban.
+
+-- A függvényben először létrehozunk egy hints értéket,
+-- amely a defaultHints függvényből származik,
+-- és beállítjuk a Stream értéket az addrSocketType mezőben,
+-- ami azt jelzi, hogy TCP/IP stream socket-et használunk.
+
+-- Ezt követően meghívjuk a getAddrInfo függvényt,
+-- amely az adott hostname és port alapján kérdez le egy vagy több AddrInfo értéket
+-- a rendszer szolgáltatásaitól.
+-- Az első AddrInfo értéket kiválasztjuk a listából,
+-- majd visszaadjuk ezt az értéket az IO monádban.
 
 getFilePath :: String -> FilePath
 getFilePath request =
@@ -135,13 +195,18 @@ getFilePath request =
         if head path == '/'
           then tail path
           else path
-      --  in trace ("Normalized path: " ++ normalizedPath) $ "sites/" </> normalizedPath
       filePath =
         if normalizedPath == ""
           then -- redirecting to the index.html if there is no path
             "sites/index.html"
           else "sites" </> normalizedPath
    in filePath
+
+-- Ez a függvény a kérésre ad válaszul egy elérési útvonalat a megfelelő fájlnak a szerveren.
+-- Bemeneti paraméterként egy Stringet kap ami a kérést tartalmazza.
+-- A függvény szét bontja a stringet szavakra és megpróbálja megtalálni a sites könvtáron belül 
+-- a keresett fileokat. Alapértelmezetten az index.html-t adja vissza
+-- amennyiben nem volt megadva kérés az elérési útvonalra vonatkozóan.
 
 getContentType :: FilePath -> String
 getContentType path =
@@ -160,3 +225,6 @@ getContentType path =
         ".webp" -> "image/webp"
         ".avif" -> "image/avif"
         _ -> "application/octet-stream"
+
+-- A fenti függvény file kiterjesztés alapján meghatározza
+-- egy fájl HTTP kérés beli típusát és ezt adja vissza válaszként.
