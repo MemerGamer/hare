@@ -10,6 +10,7 @@ import qualified Data.ByteString.Char8 as BSC
 -- ez a modul ByteStringekkel dolgozik (byte sorozatokkal lényegében) amelyek részei az ASCII karaktereknek
 import qualified Data.ByteString.Lazy as BSL
 -- ez a modul hasonló az előzőhöz, viszont ez csak akkor dolgozik a bytestringekkel amikor rájuk szükségük van
+
 import Data.List (intercalate)
 -- listák manipulálásához szükséges függvények
 -- intercalate: összefűzi a listaelemeket adott szeparátorral
@@ -63,6 +64,7 @@ import Network.Socket
 import System.Directory (doesFileExist)
 import System.FilePath (takeExtension, (</>))
 import System.IO (IOMode (ReadMode), hFileSize, withFile)
+import Prelude
 
 -- A System.Directory: függvények melyek a fájlok kezelésére szolgálnak
 -- doesFileExist: megvizsgálja, hogy létezik-e adott fájl az adott útvonalon
@@ -70,7 +72,7 @@ import System.IO (IOMode (ReadMode), hFileSize, withFile)
 -- </> operátorral: összefűzhetjük az útvonalakat
 -- takeExtension függvénnyel: kinyerhetjük a fájlkiterjesztést
 
-server :: PortNumber -> String -> Int -> IO ()
+server :: PortNumber -> String -> Int -> IO a
 server port hostname backlog = withSocketsDo $ do
   addr <- resolve hostname port
   sock <- socket (addrFamily addr) Stream defaultProtocol
@@ -101,23 +103,23 @@ server port hostname backlog = withSocketsDo $ do
         BSC.hPut handle (BSC.pack redirectHeaders)
         hClose handle
 
--- A szerver várakozik bejövő HTTP kérésekre egy megadott porton és hoszton, 
+-- A szerver várakozik bejövő HTTP kérésekre egy megadott porton és hoszton,
 -- majd ezeket a kéréseket kezeli azzal, hogy vagy visszaadja a kérésre válaszul egy fájl tartalmát,
 -- vagy átirányít a "404 Not Found" oldalra, amennyiben nem talál ilyen filet.
 -- Bemenetül kap:
---  PortNumber értéket amin várakozni fog a kérésekre 
---  String ami a hoszt név 
+--  PortNumber értéket amin várakozni fog a kérésekre
+--  String ami a hoszt név
 --  Int ami a maximális várakozási sort jelöli
---  a withSocketsDo leellenőrzni, hogy a socketet megfelelően vannak-e inicializálva 
+--  a withSocketsDo leellenőrzni, hogy a socketet megfelelően vannak-e inicializálva
 --  ezután a hoszt nevet és a portot egy AddrInfo struktútába rakjuk amelyet felhasznál a szerver
---  hogy létrehozzon egy Streamet a socket függvény segítségével 
---  a setSocketOption lehetővé teszi a port újra felhasználását amennyiben a szerver 
---  hírtelen leálláskor nem tudná felszabadítani azt 
---  ezután a socketet hozzá bindeoljuk a megflelő címhez ami az AddrInfo struktúrában található 
+--  hogy létrehozzon egy Streamet a socket függvény segítségével
+--  a setSocketOption lehetővé teszi a port újra felhasználását amennyiben a szerver
+--  hírtelen leálláskor nem tudná felszabadítani azt
+--  ezután a socketet hozzá bindeoljuk a megflelő címhez ami az AddrInfo struktúrában található
 --  és a liste fgv. el kezdi figyelni a bejövő http kéréseket a szerverre
--- a forever loopban ha minden rendben van a bejövő kéréseket 
--- megfelelő módon szét tagoljuk illetve feldolgozzuk segéd függvényekkel 
--- és az általuk adott választ visszaküldjük http protokollon keresztül a kliensnek 
+-- a forever loopban ha minden rendben van a bejövő kéréseket
+-- megfelelő módon szét tagoljuk illetve feldolgozzuk segéd függvényekkel
+-- és az általuk adott választ visszaküldjük http protokollon keresztül a kliensnek
 
 loop :: Handle -> BSL.ByteString -> IO ()
 loop handle contents = do
@@ -127,10 +129,10 @@ loop handle contents = do
     BSL.hPut handle chunk
     loop handle rest
 
--- Ez a függvény egy egyszerű ciklust implementál, 
+-- Ez a függvény egy egyszerű ciklust implementál,
 -- amely adatblokkokat küld a hálózatra adott méretű "darabokban".
--- A függvény két paramétert kap: 
--- egy Handle típusú értéket, amely a hálózati kommunikációhoz használt kezelő, 
+-- A függvény két paramétert kap:
+-- egy Handle típusú értéket, amely a hálózati kommunikációhoz használt kezelő,
 -- és egy BSL.ByteString típusú értéket, amely a küldendő adatokat tartalmazza.
 --
 -- A ciklusban egy adott "darabméret" (chunkSize) értéke kerül inicializálásra,
@@ -160,9 +162,9 @@ responseHeaders contentType fileName fileSize =
 -- Ez a függvény a válaszüzenet HTTP fejléceit állítja elő,
 -- amelyek tartalmazzák a kérésre adandó választ.
 
--- A függvény három paramétert vár: 
--- contentType (a visszaküldendő fájl típusa), 
--- fileName (a visszaküldendő fájl neve), 
+-- A függvény három paramétert vár:
+-- contentType (a visszaküldendő fájl típusa),
+-- fileName (a visszaküldendő fájl neve),
 -- és fileSize (a visszaküldendő fájl mérete).
 
 -- Az intercalate függvénnyel a fejléceknek
@@ -171,8 +173,8 @@ responseHeaders contentType fileName fileSize =
 
 -- Az "HTTP/1.1 200 OK" státuszüzenet, amely jelzi, hogy a kérés sikeres volt.
 -- A "Content-Type" fejléc, amely az adott fájl típusát határozza meg.
--- A "Content-Disposition" fejléc, 
--- amely az adott fájl elrendezését határozza meg. 
+-- A "Content-Disposition" fejléc,
+-- amely az adott fájl elrendezését határozza meg.
 -- A "Content-Length" fejléc, amely a visszaküldött adatok méretét határozza meg.
 -- Két üres sor, amelyekkel a fejlécek véget érnek.
 -- A fejlécek szövegsorozata visszatérési értékként kerül visszaadásra.
@@ -214,7 +216,7 @@ getFilePath request =
 
 -- Ez a függvény a kérésre ad válaszul egy elérési útvonalat a megfelelő fájlnak a szerveren.
 -- Bemeneti paraméterként egy Stringet kap ami a kérést tartalmazza.
--- A függvény szét bontja a stringet szavakra és megpróbálja megtalálni a sites könvtáron belül 
+-- A függvény szét bontja a stringet szavakra és megpróbálja megtalálni a sites könvtáron belül
 -- a keresett fileokat. Alapértelmezetten az index.html-t adja vissza
 -- amennyiben nem volt megadva kérés az elérési útvonalra vonatkozóan.
 
