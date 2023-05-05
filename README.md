@@ -20,6 +20,7 @@ Hare is a HTTP server written in haskell, based on the [rabbit](https://github.c
 
 - [x] make it a dynamic webserver (it processes requests from the client)
 - [ ] transpile haskell funtions to javascript
+      This task is on hold because of its complexity.
 
 ## Installation
 
