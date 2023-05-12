@@ -1,3 +1,5 @@
+#!/usr/bin/env runhaskell
+
 import Server (server)
 
 -- meghívtam a Server moduleból a server függvényt
