@@ -1,0 +1,3 @@
+sys
+PyQt5
+subprocess

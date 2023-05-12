@@ -21,6 +21,7 @@ Hare is a HTTP server written in haskell, based on the [rabbit](https://github.c
 - [x] make it a dynamic webserver (it processes requests from the client)
 - [ ] transpile haskell funtions to javascript
       This task is on hold because of its complexity.
+- [x] GUI fot starting, stopping and adding project to the sites directory (in python currently with pyqt)
 
 ## Installation
 
@@ -40,5 +41,31 @@ cabal install --dependencies-only $(cat dependencies.txt)
 ### Run Hare
 
 ```console
+./Main.hs
+```
+
+OR:
+
+```console
 runhaskell Main.hs
+```
+
+### For GUI users
+
+For the gui app you will need python3 and you will need to install the required dependencies with the following code:
+
+```console
+pip install -r requirements.txt
+```
+
+Starting the GUI:
+
+```console
+./hare.py
+```
+
+Or:
+
+```console
+python3 hare.py
 ```
